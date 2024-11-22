@@ -38,7 +38,7 @@ fecha2 = df_dolar.iloc[0, 0]
 # Caja de búsqueda
 nombres_clientes = df_clientes['Cliente'].dropna().unique().tolist()
 
-pdfmetrics.registerFont(TTFont('HandelGothic BT', 'fonts\HANDGOTN.TTF'))
+pdfmetrics.registerFont(TTFont('HandelGothic BT', 'fonts/HANDGOTN.TTF'))
 
 # Agrega una nueva columna llamada "categoria_producto"  y guarda las letras del codigo
 df['Categoria Producto'] = df.iloc[:, 0].str.extract(r'^([a-zA-Z]*)', expand=False)

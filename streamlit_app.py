@@ -10,6 +10,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.units import inch
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
 from io import BytesIO
 
 
@@ -35,6 +37,8 @@ fecha = df_dolar.iloc[0, 0].replace("/", "_")
 fecha2 = df_dolar.iloc[0, 0]
 # Caja de búsqueda
 nombres_clientes = df_clientes['Cliente'].dropna().unique().tolist()
+
+pdfmetrics.registerFont(TTFont('HandelGothic BT', 'fonts\HANDGOTN.TTF'))
 
 # Agrega una nueva columna llamada "categoria_producto"  y guarda las letras del codigo
 df['Categoria Producto'] = df.iloc[:, 0].str.extract(r'^([a-zA-Z]*)', expand=False)
@@ -391,18 +395,19 @@ if tipo_venta == 'Venta por unidad' and  tipo_moneda == 'Dolar' :
                     cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["Precio/USD"]) * float(row["Cantidad"]), 3), axis=1)
                     st.write(cotiza_df)
                     total = (cotiza_df['SubTotal']).sum()
-                    st.write("Total Cotizacion: $" + str(round(total, 2)))
-                  
+                    st.write(f"SubTotal a pagar: ${total:.2f}")
 
-                    
-                pagesize = letter
-                leftMargin = 18     
-                rightMargin = 18  
-                topMargin = 180 
-                bottomMargin = 0            
+
+
+                    #pdf
+                    pagesize = letter
+                    leftMargin = 18  # 1 pulgada   
+                    rightMargin = 18  # 1 pulgada
+                    topMargin = 180 # 1 pulgada
+                    bottomMargin = 0  # 1 pulgada           
                     
                 data = [
-                    ['Codigo', 'Articulo', 'Precio/USD', 'Cantidad', 'SubTotal']
+                        ['Codigo', 'Articulo', 'Precio/USD', 'Cantidad', 'SubTotal']
                     ]
 
         
@@ -415,10 +420,12 @@ if tipo_venta == 'Venta por unidad' and  tipo_moneda == 'Dolar' :
 
 
 
+                colWidths = [60, 160, 65, 60, 120]
+                tablo = Table(data, colWidths=colWidths)
 
-                # Estilo de la tabla de cotización
+            # Estilo de la tabla
                 style = TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.black), 
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
                         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
                         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
@@ -426,9 +433,6 @@ if tipo_venta == 'Venta por unidad' and  tipo_moneda == 'Dolar' :
                         ('BACKGROUND', (0, 1), (-1, -1), colors.white),
                         ('GRID', (0, 0), (-1, -1), 1, colors.black),
                         ])
-
-                colWidths = [60, 160, 65, 60, 120]
-                tablo = Table(data, colWidths=colWidths)
                 tablo.setStyle(style)
                 
 
@@ -436,78 +440,120 @@ if tipo_venta == 'Venta por unidad' and  tipo_moneda == 'Dolar' :
 
                 cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
                 cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+                # Luego, utiliza cliente_data para crear la tabla
+            
+
                 pdf_buffer = BytesIO()
 
-                #Genera el pdf
                 doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
                                         topMargin=topMargin, bottomMargin=bottomMargin)
 
-                #Estilo de parrafo
-                clo = ParagraphStyle(
-                    textColor= 'transparent',
-                    name= "sti"
+        # Crea un estilo de texto
+                mi_estilo = ParagraphStyle(
+                name='MiEstilo',
+                fontSize=8,
+                textColor='transparent'
                 )
 
-                #Este parrafo une el formato canvas.canvas con el formato simpledoctemplate
-                parrafo_personalizado = Paragraph("Te", clo)
+        # Crear un párrafo utilizando el estilo personalizado
+                parrafo_personalizado = Paragraph("Te", mi_estilo)
         # Crea un párrafo de texto
 
-                #La funcion esta genera el codigo con canvas.canvas asi se puede unir con el otro formato 
+        # Función para dibujar en el PDF
                 def draw(c, doc):
 
                     
                 
                     width, height = letter
-                    c.drawImage("images/Logo.png", 1 * inch, height - 1.5 * inch, width=1 * inch, height=0.9 * inch)
 
-                    #Esta variable otorga el nombre del cliente que elegis al cotizar
-                    BuenCliente = ("Cliente: " + cliente_data)
-                    c.drawString(72, 665, BuenCliente)
-
-                    #Esta variable toma el mail
-                    BuenVendedor = ("Vendedor: " + Vendedor)
-                    c.drawString(72, 650, BuenVendedor)
-
-                    #Esta variable toma el valor que pusiste en el tiempo de cotizacion entre 7, 15 o 30 dias
-                    c.drawString(72, 635, "Cotizacion valida por: " + tiempo_cotizacion)
-
-
-                    #Esta variable toma el valor al dia del dolar
-                    BuenDolar = ("DolarVentaBNA : " + str(dolar_hoy))
-                    c.drawString(72, 605, BuenDolar)
+            # Dibujar un borde
                     
+                    c.drawString(72, 650, Vendedor)
+                    BuenCliente = ("Cliente: " + cliente_data)
+                    c.drawString(72, 635, BuenCliente)
+                    c.drawString(420, 650, "Fecha : " + fecha2)
+                    
+                    
+                    # Agregar "Administración" en negrita
+                    c.setFont("Helvetica-Bold", 12)
+                    c.drawString(72, 600, "ADMINISTRACIÓN")
 
-                    #Margen del pdf
+                    # Dirección: "Francisco Roca 574"
+                    c.setFont("Helvetica", 10)
+                    c.drawString(72, 585, "Francisco Roca 574")
+
+                    # Ciudad: "(2705) Rojas - Buenos Aires"
+                    c.setFont("Helvetica", 10)
+                    c.drawString(72, 570, "(2705) Rojas - Buenos Aires")
+
+                    # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                    c.setFont("Helvetica", 10)
+                    c.drawString(72, 555, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                    
+                    c.drawString(72, 540, "##########################")
+                    
+                    
+                    x_pos=410
+                    # Agregar "PLANTA INDUSTRIAL" en negrita
+                    c.setFont("Helvetica-Bold", 12)
+                    c.drawString(x_pos, 600, "PLANTA INDUSTRIAL")
+
+                    # Dirección: "Ruta Prov. 45 y Carrasco"
+                    c.setFont("Helvetica", 10)
+                    c.drawString(x_pos, 585, "Ruta Prov. 45 y Carrasco")
+
+                    # Ciudad: "(2705) Rojas - Buenos Aires"
+                    c.setFont("Helvetica", 10)
+                    c.drawString(x_pos, 570, "(2705) Rojas - Buenos Aires")
+
+                    # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                    c.setFont("Helvetica", 10)
+                    c.drawString(x_pos, 555, "Textil: (02475) 46-5586 L.Rot.")
+
+                    # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                    c.setFont("Helvetica", 10)
+                    c.drawString(x_pos, 540, "Envases: (02475) 46-3381 L.Rot.")
+                    
+                    
+                    
+                    c.setStrokeColor(colors.black)
                     c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
 
-                    #Titulo del archivo
-                    c.setFont("Helvetica", 35)
-                    c.drawString(2.1 * inch, height - 1.23 * inch, "Cotizacion")
                         
+                    c.drawString(72, 620, "Cotizacion valida por: " + tiempo_cotizacion)
             
-                    #Donde se va a dibujar la tabla de productos a vender
+
+            # Logo de la empresa
+                    c.drawImage(".images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                    
+            # Título y pretexto
+                    c.setFont("Helvetica-Bold", 11)
+                    c.drawString(2.1 * inch, height - 1.54 * inch, "Cotizacion")
+                    c.setFont("HandelGothic BT", 22)
+                    c.drawString(2.1 * inch, height - 1.37 * inch, "RICARDO ALMAR E HIJOS S.A")
+                    
+                    
+                    
                     tablo.wrapOn(c, width, height)
-                    tablo.drawOn(c, 72, 450)
-            
+                    tablo.drawOn(c, 1 * inch, height - 6   * inch)
+
+
+
                 elementos=[parrafo_personalizado]
                 doc.build(elementos, onFirstPage=draw)
-                    
-                    
+                
+
+
 
 
                 pdf_buffer.seek(0)
-
-                #Boton de descarga del archivo
+                
                 st.download_button(
                     label="Descargar Cotizacion",
                     data=pdf_buffer,
                     file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
                     mime="application/pdf"
                 )
-
-
-
-                
 
            
 elif tipo_venta == 'Venta por unidad' and  tipo_moneda == 'Peso':
@@ -521,121 +567,165 @@ elif tipo_venta == 'Venta por unidad' and  tipo_moneda == 'Peso':
                 cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["Precio/Pesos"]) * float(row["Cantidad"]), 3), axis=1)
                 st.write(cotiza_df)
                 total = (cotiza_df['SubTotal']).sum()
-               
-                st.write("Total Cotizacion: $" + str(round(total, 2)))
-                st.write("Valor del dolar hoy: " + str(round(dolar_hoy, 2)))
+                st.write(f"SubTotal a pagar: ${total:.2f}")
 
 
+
+                #pdf
                 pagesize = letter
-                leftMargin = 18     
-                rightMargin = 18  
-                topMargin = 180 
-                bottomMargin = 0            
-                    
-                data = [
+                leftMargin = 18  # 1 pulgada   
+                rightMargin = 18  # 1 pulgada
+                topMargin = 180 # 1 pulgada
+                bottomMargin = 0  # 1 pulgada           
+                
+            data = [
                     ['Codigo', 'Articulo', 'Precio/Pesos', 'Cantidad', 'SubTotal']
-                    ]
+                ]
 
+    
+            for index, row in cotiza_df.iterrows():
+        # Asegúrate de que estás accediendo a los valores correctamente
+                data.append([row["Codigo"], row["Articulo"], row["Precio/Pesos"], row["Cantidad"],  row["SubTotal"]])
+            data.append(["", "", "", "Total", round(total, 2)])
+
+                
+
+
+
+            colWidths = [60, 160, 65, 60, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+        # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+
+
+
+            cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            # Luego, utiliza cliente_data para crear la tabla
         
-                for index, row in cotiza_df.iterrows():
-            # Asegúrate de que estás accediendo a los valores correctamente
-                    data.append([row["Codigo"], row["Articulo"], row["Precio/Pesos"], row["Cantidad"],  row["SubTotal"]])
-                data.append(["", "", "", "Total", round(total, 2)])
 
-                    
+            pdf_buffer = BytesIO()
 
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
 
+    # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
 
+    # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+    # Crea un párrafo de texto
 
-                # Estilo de la tabla de cotización
-                style = TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.black), 
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ])
+    # Función para dibujar en el PDF
+            def draw(c, doc):
 
-                colWidths = [60, 160, 65, 60, 120]
-                tablo = Table(data, colWidths=colWidths)
-                tablo.setStyle(style)
                 
+            
+                width, height = letter
 
-
-
-                cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
-                cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
-
-                pdf_buffer = BytesIO()
-
-                #Genera el pdf
-                doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
-                                        topMargin=topMargin, bottomMargin=bottomMargin)
-
-                #Estilo de parrafo
-                clo = ParagraphStyle(
-                    textColor= 'transparent',
-                    name= "sti"
-                )
-
-                #Este parrafo une el formato canvas.canvas con el formato simpledoctemplate
-                parrafo_personalizado = Paragraph("Te", clo)
-        # Crea un párrafo de texto
-
-                #La funcion esta genera el codigo con canvas.canvas asi se puede unir con el otro formato 
-                def draw(c, doc):
-
-                    
+        # Dibujar un borde
                 
-                    width, height = letter
-                    c.drawImage("images/Logo.png", 1 * inch, height - 1.5 * inch, width=1 * inch, height=0.9 * inch)
+                c.drawString(72, 650, Vendedor)
+                BuenCliente = ("Cliente: " + cliente_data)
+                c.drawString(72, 635, BuenCliente)
+                c.drawString(420, 650, "Fecha : " + fecha2)
+                
+                
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(72, 600, "ADMINISTRACIÓN")
 
-                    #Esta variable otorga el nombre del cliente que elegis al cotizar
-                    BuenCliente = ("Cliente: " + cliente_data)
-                    c.drawString(72, 665, BuenCliente)
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 585, "Francisco Roca 574")
 
-                    #Esta variable toma el mail
-                    BuenVendedor = ("Vendedor: " + Vendedor)
-                    c.drawString(72, 650, BuenVendedor)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 570, "(2705) Rojas - Buenos Aires")
 
-                    #Esta variable toma el valor que pusiste en el tiempo de cotizacion entre 7, 15 o 30 dias
-                    c.drawString(72, 635, "Cotizacion valida por: " + tiempo_cotizacion)
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 555, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                
+                c.drawString(72, 540, "##########################")
+                
+                
+                x_pos=410
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(x_pos, 600, "PLANTA INDUSTRIAL")
 
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Ruta Prov. 45 y Carrasco")
 
-                    #Esta variable toma el valor al dia del dolar
-                    BuenDolar = ("DolarVentaBNA : " + str(dolar_hoy))
-                    c.drawString(72, 605, BuenDolar)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 570, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 555, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 540, "Envases: (02475) 46-3381 L.Rot.")
+                
+                
+                
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
                     
+                c.drawString(72, 620, "Cotizacion valida por: " + tiempo_cotizacion)
+        
 
-                    #Margen del pdf
-                    c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+        # Logo de la empresa
+                c.drawImage(".images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+        # Título y pretexto
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(2.1 * inch, height - 1.54 * inch, "Cotizacion")
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(2.1 * inch, height - 1.37 * inch, "RICARDO ALMAR E HIJOS S.A")
+                
+                
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
 
-                    #Titulo del archivo
-                    c.setFont("Helvetica", 35)
-                    c.drawString(2.1 * inch, height - 1.23 * inch, "Cotizacion")
-                        
+
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
             
-                    #Donde se va a dibujar la tabla de productos a vender
-                    tablo.wrapOn(c, width, height)
-                    tablo.drawOn(c, 72, 450)
+
+
+
+
+            pdf_buffer.seek(0)
             
-                elementos=[parrafo_personalizado]
-                doc.build(elementos, onFirstPage=draw)
-                    
-                    
-
-
-                pdf_buffer.seek(0)
-
-                #Boton de descarga del archivo
-                st.download_button(
-                    label="Descargar Cotizacion",
-                    data=pdf_buffer,
-                    file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
-                    mime="application/pdf"
-                )
+            st.download_button(
+                label="Descargar Cotizacion",
+                data=pdf_buffer,
+                file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
+                mime="application/pdf"
+            )
 
 
 
@@ -655,118 +745,165 @@ elif tipo_venta == 'Venta por peso' and tipo_moneda == 'Dolar':
                 cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["PrecioKg/USD"]) * float(row["Kg_vender"]), 3), axis=1)
                 st.write(cotiza_df)
                 total = (cotiza_df['SubTotal']).sum()
-                st.write("Total Cotizacion: $" + str(round(total, 2)))
-                    
+                st.write(f"SubTotal a pagar: ${total:.2f}")
+
+
+
+                #pdf
                 pagesize = letter
-                leftMargin = 18     
-                rightMargin = 18  
-                topMargin = 180 
-                bottomMargin = 0            
-                    
-                data = [
-                    ['Codigo', 'Articulo', 'PrecioKg/USD', 'Kg_Vender', 'SubTotal']
-                    ]
+                leftMargin = 18  # 1 pulgada   
+                rightMargin = 18  # 1 pulgada
+                topMargin = 180 # 1 pulgada
+                bottomMargin = 0  # 1 pulgada           
+                
+            data = [
+                    ['Codigo', 'Articulo', 'PrecioKg/USD', 'Kg_vender', 'SubTotal']
+                ]
 
+    
+            for index, row in cotiza_df.iterrows():
+        # Asegúrate de que estás accediendo a los valores correctamente
+                data.append([row["Codigo"], row["Articulo"], row["PrecioKg/USD"], row["Kg_vender"],  row["SubTotal"]])
+            data.append(["", "", "", "Total", round(total, 2)])
+
+                
+
+
+
+            colWidths = [60, 160, 65, 60, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+        # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+
+
+
+            cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            # Luego, utiliza cliente_data para crear la tabla
         
-                for index, row in cotiza_df.iterrows():
-            # Asegúrate de que estás accediendo a los valores correctamente
-                    data.append([row["Codigo"], row["Articulo"], row["PrecioKG/USD"], row["Kg_Vender"],  row["SubTotal"]])
-                data.append(["", "", "", "Total", round(total, 2)])
 
-                    
+            pdf_buffer = BytesIO()
 
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
 
+    # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
 
+    # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+    # Crea un párrafo de texto
 
-                # Estilo de la tabla de cotización
-                style = TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.black), 
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ])
+    # Función para dibujar en el PDF
+            def draw(c, doc):
 
-                colWidths = [60, 160, 65, 60, 120]
-                tablo = Table(data, colWidths=colWidths)
-                tablo.setStyle(style)
                 
+            
+                width, height = letter
 
-
-
-                cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
-                cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
-
-                pdf_buffer = BytesIO()
-
-                #Genera el pdf
-                doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
-                                        topMargin=topMargin, bottomMargin=bottomMargin)
-
-                #Estilo de parrafo
-                clo = ParagraphStyle(
-                    textColor= 'transparent',
-                    name= "sti"
-                )
-
-                #Este parrafo une el formato canvas.canvas con el formato simpledoctemplate
-                parrafo_personalizado = Paragraph("Te", clo)
-        # Crea un párrafo de texto
-
-                #La funcion esta genera el codigo con canvas.canvas asi se puede unir con el otro formato 
-                def draw(c, doc):
-
-                    
+        # Dibujar un borde
                 
-                    width, height = letter
-                    c.drawImage("images/Logo.png", 1 * inch, height - 1.5 * inch, width=1 * inch, height=0.9 * inch)
+                c.drawString(72, 650, Vendedor)
+                BuenCliente = ("Cliente: " + cliente_data)
+                c.drawString(72, 635, BuenCliente)
+                c.drawString(420, 650, "Fecha : " + fecha2)
+                
+                
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(72, 600, "ADMINISTRACIÓN")
 
-                    #Esta variable otorga el nombre del cliente que elegis al cotizar
-                    BuenCliente = ("Cliente: " + cliente_data)
-                    c.drawString(72, 665, BuenCliente)
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 585, "Francisco Roca 574")
 
-                    #Esta variable toma el mail
-                    BuenVendedor = ("Vendedor: " + Vendedor)
-                    c.drawString(72, 650, BuenVendedor)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 570, "(2705) Rojas - Buenos Aires")
 
-                    #Esta variable toma el valor que pusiste en el tiempo de cotizacion entre 7, 15 o 30 dias
-                    c.drawString(72, 635, "Cotizacion valida por: " + tiempo_cotizacion)
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 555, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                
+                c.drawString(72, 540, "##########################")
+                
+                
+                x_pos=410
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(x_pos, 600, "PLANTA INDUSTRIAL")
 
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Ruta Prov. 45 y Carrasco")
 
-                    #Esta variable toma el valor al dia del dolar
-                    BuenDolar = ("DolarVentaBNA : " + str(dolar_hoy))
-                    c.drawString(72, 605, BuenDolar)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 570, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 555, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 540, "Envases: (02475) 46-3381 L.Rot.")
+                
+                
+                
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
                     
+                c.drawString(72, 620, "Cotizacion valida por: " + tiempo_cotizacion)
+        
 
-                    #Margen del pdf
-                    c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+        # Logo de la empresa
+                c.drawImage(".images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+        # Título y pretexto
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(2.1 * inch, height - 1.54 * inch, "Cotizacion")
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(2.1 * inch, height - 1.37 * inch, "RICARDO ALMAR E HIJOS S.A")
+                
+                
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
 
-                    #Titulo del archivo
-                    c.setFont("Helvetica", 35)
-                    c.drawString(2.1 * inch, height - 1.23 * inch, "Cotizacion")
-                        
+
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
             
-                    #Donde se va a dibujar la tabla de productos a vender
-                    tablo.wrapOn(c, width, height)
-                    tablo.drawOn(c, 72, 450)
+
+
+
+
+            pdf_buffer.seek(0)
             
-                elementos=[parrafo_personalizado]
-                doc.build(elementos, onFirstPage=draw)
-                    
-                    
-
-
-                pdf_buffer.seek(0)
-
-                #Boton de descarga del archivo
-                st.download_button(
-                    label="Descargar Cotizacion",
-                    data=pdf_buffer,
-                    file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
-                    mime="application/pdf"
-                )
+            st.download_button(
+                label="Descargar Cotizacion",
+                data=pdf_buffer,
+                file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
+                mime="application/pdf"
+            )
 
 
                 
@@ -781,120 +918,165 @@ elif tipo_venta == 'Venta por peso' and tipo_moneda == 'Peso':
                 cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["PrecioKg/Pesos"]) * float(row["Kg_vender"]), 3), axis=1)
                 st.write(cotiza_df)
                 total = (cotiza_df['SubTotal']).sum()
-                st.write("Total Cotizacion: $" + str(round(total, 2)))
-                st.write("Valor del dolar hoy: " + str(round(dolar_hoy, 2)))
+                st.write(f"SubTotal a pagar: ${total:.2f}")
 
 
+
+                #pdf
                 pagesize = letter
-                leftMargin = 18     
-                rightMargin = 18  
-                topMargin = 180 
-                bottomMargin = 0            
-                    
-                data = [
+                leftMargin = 18  # 1 pulgada   
+                rightMargin = 18  # 1 pulgada
+                topMargin = 180 # 1 pulgada
+                bottomMargin = 0  # 1 pulgada           
+                
+            data = [
                     ['Codigo', 'Articulo', 'PrecioKg/Pesos', 'Kg_vender', 'SubTotal']
-                    ]
+                ]
 
+    
+            for index, row in cotiza_df.iterrows():
+        # Asegúrate de que estás accediendo a los valores correctamente
+                data.append([row["Codigo"], row["Articulo"], row["PrecioKg/Pesos"], row["Kg_vender"],  row["SubTotal"]])
+            data.append(["", "", "", "Total", round(total, 2)])
+
+                
+
+
+
+            colWidths = [60, 160, 65, 60, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+        # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+
+
+
+            cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            # Luego, utiliza cliente_data para crear la tabla
         
-                for index, row in cotiza_df.iterrows():
-            # Asegúrate de que estás accediendo a los valores correctamente
-                    data.append([row["Codigo"], row["Articulo"], row["PrecioKg/Pesos"], row["Kg_Vender"],  row["SubTotal"]])
-                data.append(["", "", "", "Total", round(total, 2)])
 
-                    
+            pdf_buffer = BytesIO()
 
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
 
+    # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
 
+    # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+    # Crea un párrafo de texto
 
-                # Estilo de la tabla de cotización
-                style = TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.black), 
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ])
+    # Función para dibujar en el PDF
+            def draw(c, doc):
 
-                colWidths = [60, 160, 65, 60, 120]
-                tablo = Table(data, colWidths=colWidths)
-                tablo.setStyle(style)
                 
+            
+                width, height = letter
 
-
-
-                cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
-                cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
-
-                pdf_buffer = BytesIO()
-
-                #Genera el pdf
-                doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
-                                        topMargin=topMargin, bottomMargin=bottomMargin)
-
-                #Estilo de parrafo
-                clo = ParagraphStyle(
-                    textColor= 'transparent',
-                    name= "sti"
-                )
-
-                #Este parrafo une el formato canvas.canvas con el formato simpledoctemplate
-                parrafo_personalizado = Paragraph("Te", clo)
-        # Crea un párrafo de texto
-
-                #La funcion esta genera el codigo con canvas.canvas asi se puede unir con el otro formato 
-                def draw(c, doc):
-
-                    
+        # Dibujar un borde
                 
-                    width, height = letter
-                    c.drawImage("images/Logo.png", 1 * inch, height - 1.5 * inch, width=1 * inch, height=0.9 * inch)
+                c.drawString(72, 650, Vendedor)
+                BuenCliente = ("Cliente: " + cliente_data)
+                c.drawString(72, 635, BuenCliente)
+                c.drawString(420, 650, "Fecha : " + fecha2)
+                
+                
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(72, 600, "ADMINISTRACIÓN")
 
-                    #Esta variable otorga el nombre del cliente que elegis al cotizar
-                    BuenCliente = ("Cliente: " + cliente_data)
-                    c.drawString(72, 665, BuenCliente)
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 585, "Francisco Roca 574")
 
-                    #Esta variable toma el mail
-                    BuenVendedor = ("Vendedor: " + Vendedor)
-                    c.drawString(72, 650, BuenVendedor)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 570, "(2705) Rojas - Buenos Aires")
 
-                    #Esta variable toma el valor que pusiste en el tiempo de cotizacion entre 7, 15 o 30 dias
-                    c.drawString(72, 635, "Cotizacion valida por: " + tiempo_cotizacion)
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 555, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                
+                c.drawString(72, 540, "##########################")
+                
+                
+                x_pos=410
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(x_pos, 600, "PLANTA INDUSTRIAL")
 
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Ruta Prov. 45 y Carrasco")
 
-                    #Esta variable toma el valor al dia del dolar
-                    BuenDolar = ("DolarVentaBNA : " + str(dolar_hoy))
-                    c.drawString(72, 605, BuenDolar)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 570, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 555, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 540, "Envases: (02475) 46-3381 L.Rot.")
+                
+                
+                
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
                     
+                c.drawString(72, 620, "Cotizacion valida por: " + tiempo_cotizacion)
+        
 
-                    #Margen del pdf
-                    c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+        # Logo de la empresa
+                c.drawImage(".images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+        # Título y pretexto
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(2.1 * inch, height - 1.54 * inch, "Cotizacion")
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(2.1 * inch, height - 1.37 * inch, "RICARDO ALMAR E HIJOS S.A")
+                
+                
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
 
-                    #Titulo del archivo
-                    c.setFont("Helvetica", 35)
-                    c.drawString(2.1 * inch, height - 1.23 * inch, "Cotizacion")
-                        
+
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
             
-                    #Donde se va a dibujar la tabla de productos a vender
-                    tablo.wrapOn(c, width, height)
-                    tablo.drawOn(c, 72, 450)
+
+
+
+
+            pdf_buffer.seek(0)
             
-                elementos=[parrafo_personalizado]
-                doc.build(elementos, onFirstPage=draw)
-                    
-                    
-
-
-                pdf_buffer.seek(0)
-
-                #Boton de descarga del archivo
-                st.download_button(
-                    label="Descargar Cotizacion",
-                    data=pdf_buffer,
-                    file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
-                    mime="application/pdf"
-                )
+            st.download_button(
+                label="Descargar Cotizacion",
+                data=pdf_buffer,
+                file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
+                mime="application/pdf"
+            )
 elif tipo_venta == 'Venta por metro' and tipo_moneda == 'Dolar':
     if not st.session_state.carrito.empty:
         if st.button("Cotizar"):
@@ -906,118 +1088,165 @@ elif tipo_venta == 'Venta por metro' and tipo_moneda == 'Dolar':
                 cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["Precio/USD"]) * float(row["Metros_vender"]), 3), axis=1)
                 st.write(cotiza_df)
                 total = (cotiza_df['SubTotal']).sum()
-                st.write("Total Cotizacion: $" + str(round(total, 2)))
-                    
+                st.write(f"SubTotal a pagar: ${total:.2f}")
+
+
+
+                #pdf
                 pagesize = letter
-                leftMargin = 18     
-                rightMargin = 18  
-                topMargin = 180 
-                bottomMargin = 0            
-                    
-                data = [
-                    ['Codigo', 'Articulo', 'Precio/USD', 'Metros_Vender', 'SubTotal']
-                    ]
+                leftMargin = 18  # 1 pulgada   
+                rightMargin = 18  # 1 pulgada
+                topMargin = 180 # 1 pulgada
+                bottomMargin = 0  # 1 pulgada           
+                
+            data = [
+                    ['Codigo', 'Articulo', 'Precio/USD', 'Metros_vender', 'SubTotal']
+                ]
 
+    
+            for index, row in cotiza_df.iterrows():
+        # Asegúrate de que estás accediendo a los valores correctamente
+                data.append([row["Codigo"], row["Articulo"], row["Precio/USD"], row["Metros_vender"],  row["SubTotal"]])
+            data.append(["", "", "", "Total", round(total, 2)])
+
+                
+
+
+
+            colWidths = [60, 160, 65, 60, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+        # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+
+
+
+            cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            # Luego, utiliza cliente_data para crear la tabla
         
-                for index, row in cotiza_df.iterrows():
-            # Asegúrate de que estás accediendo a los valores correctamente
-                    data.append([row["Codigo"], row["Articulo"], row["Precio/USD"], row["Metros_vender"],  row["SubTotal"]])
-                data.append(["", "", "", "Total", round(total, 2)])
 
-                    
+            pdf_buffer = BytesIO()
 
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
 
+    # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
 
+    # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+    # Crea un párrafo de texto
 
-                # Estilo de la tabla de cotización
-                style = TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.black), 
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ])
+    # Función para dibujar en el PDF
+            def draw(c, doc):
 
-                colWidths = [60, 160, 65, 60, 120]
-                tablo = Table(data, colWidths=colWidths)
-                tablo.setStyle(style)
                 
+            
+                width, height = letter
 
-
-
-                cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
-                cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
-
-                pdf_buffer = BytesIO()
-
-                #Genera el pdf
-                doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
-                                        topMargin=topMargin, bottomMargin=bottomMargin)
-
-                #Estilo de parrafo
-                clo = ParagraphStyle(
-                    textColor= 'transparent',
-                    name= "sti"
-                )
-
-                #Este parrafo une el formato canvas.canvas con el formato simpledoctemplate
-                parrafo_personalizado = Paragraph("Te", clo)
-        # Crea un párrafo de texto
-
-                #La funcion esta genera el codigo con canvas.canvas asi se puede unir con el otro formato 
-                def draw(c, doc):
-
-                    
+        # Dibujar un borde
                 
-                    width, height = letter
-                    c.drawImage("images/Logo.png", 1 * inch, height - 1.5 * inch, width=1 * inch, height=0.9 * inch)
+                c.drawString(72, 650, Vendedor)
+                BuenCliente = ("Cliente: " + cliente_data)
+                c.drawString(72, 635, BuenCliente)
+                c.drawString(420, 650, "Fecha : " + fecha2)
+                
+                
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(72, 600, "ADMINISTRACIÓN")
 
-                    #Esta variable otorga el nombre del cliente que elegis al cotizar
-                    BuenCliente = ("Cliente: " + cliente_data)
-                    c.drawString(72, 665, BuenCliente)
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 585, "Francisco Roca 574")
 
-                    #Esta variable toma el mail
-                    BuenVendedor = ("Vendedor: " + Vendedor)
-                    c.drawString(72, 650, BuenVendedor)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 570, "(2705) Rojas - Buenos Aires")
 
-                    #Esta variable toma el valor que pusiste en el tiempo de cotizacion entre 7, 15 o 30 dias
-                    c.drawString(72, 635, "Cotizacion valida por: " + tiempo_cotizacion)
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 555, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                
+                c.drawString(72, 540, "##########################")
+                
+                
+                x_pos=410
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(x_pos, 600, "PLANTA INDUSTRIAL")
 
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Ruta Prov. 45 y Carrasco")
 
-                    #Esta variable toma el valor al dia del dolar
-                    BuenDolar = ("DolarVentaBNA : " + str(dolar_hoy))
-                    c.drawString(72, 605, BuenDolar)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 570, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 555, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 540, "Envases: (02475) 46-3381 L.Rot.")
+                
+                
+                
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
                     
+                c.drawString(72, 620, "Cotizacion valida por: " + tiempo_cotizacion)
+        
 
-                    #Margen del pdf
-                    c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+        # Logo de la empresa
+                c.drawImage(".images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+        # Título y pretexto
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(2.1 * inch, height - 1.54 * inch, "Cotizacion")
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(2.1 * inch, height - 1.37 * inch, "RICARDO ALMAR E HIJOS S.A")
+                
+                
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
 
-                    #Titulo del archivo
-                    c.setFont("Helvetica", 35)
-                    c.drawString(2.1 * inch, height - 1.23 * inch, "Cotizacion")
-                        
+
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
             
-                    #Donde se va a dibujar la tabla de productos a vender
-                    tablo.wrapOn(c, width, height)
-                    tablo.drawOn(c, 72, 450)
+
+
+
+
+            pdf_buffer.seek(0)
             
-                elementos=[parrafo_personalizado]
-                doc.build(elementos, onFirstPage=draw)
-                    
-                    
-
-
-                pdf_buffer.seek(0)
-
-                #Boton de descarga del archivo
-                st.download_button(
-                    label="Descargar Cotizacion",
-                    data=pdf_buffer,
-                    file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
-                    mime="application/pdf"
-                )
+            st.download_button(
+                label="Descargar Cotizacion",
+                data=pdf_buffer,
+                file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
+                mime="application/pdf"
+            )
 
 
                 
@@ -1032,119 +1261,165 @@ elif tipo_venta == 'Venta por metro' and tipo_moneda == 'Peso':
                 cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["Precio/Pesos"]) * float(row["Metros_vender"]), 3), axis=1)
                 st.write(cotiza_df)
                 total = (cotiza_df['SubTotal']).sum()
-                st.write("Total Cotizacion: $" + str(round(total, 2)))
-                st.write("Valor del dolar hoy: " + str(round(dolar_hoy, 2)))
+                st.write(f"SubTotal a pagar: ${total:.2f}")
 
+
+
+                #pdf
                 pagesize = letter
-                leftMargin = 18     
-                rightMargin = 18  
-                topMargin = 180 
-                bottomMargin = 0            
-                    
-                data = [
+                leftMargin = 18  # 1 pulgada   
+                rightMargin = 18  # 1 pulgada
+                topMargin = 180 # 1 pulgada
+                bottomMargin = 0  # 1 pulgada           
+                
+            data = [
                     ['Codigo', 'Articulo', 'Precio/Pesos', 'Metros_vender', 'SubTotal']
-                    ]
+                ]
 
+    
+            for index, row in cotiza_df.iterrows():
+        # Asegúrate de que estás accediendo a los valores correctamente
+                data.append([row["Codigo"], row["Articulo"], row["Precio/Pesos"], row["Metros_vender"],  row["SubTotal"]])
+            data.append(["", "", "", "Total", round(total, 2)])
+
+                
+
+
+
+            colWidths = [60, 160, 65, 60, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+        # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+
+
+
+            cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            # Luego, utiliza cliente_data para crear la tabla
         
-                for index, row in cotiza_df.iterrows():
-            # Asegúrate de que estás accediendo a los valores correctamente
-                    data.append([row["Codigo"], row["Articulo"], row["Precio/Pesos"], row["Metros_vender"],  row["SubTotal"]])
-                data.append(["", "", "", "Total", round(total, 2)])
 
-                    
+            pdf_buffer = BytesIO()
 
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
 
+    # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
 
+    # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+    # Crea un párrafo de texto
 
-                # Estilo de la tabla de cotización
-                style = TableStyle([
-                        ('BACKGROUND', (0, 0), (-1, 0), colors.black), 
-                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                        ])
+    # Función para dibujar en el PDF
+            def draw(c, doc):
 
-                colWidths = [60, 160, 65, 60, 120]
-                tablo = Table(data, colWidths=colWidths)
-                tablo.setStyle(style)
                 
+            
+                width, height = letter
 
-
-
-                cliente_data = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
-                cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
-
-                pdf_buffer = BytesIO()
-
-                #Genera el pdf
-                doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
-                                        topMargin=topMargin, bottomMargin=bottomMargin)
-
-                #Estilo de parrafo
-                clo = ParagraphStyle(
-                    textColor= 'transparent',
-                    name= "sti"
-                )
-
-                #Este parrafo une el formato canvas.canvas con el formato simpledoctemplate
-                parrafo_personalizado = Paragraph("Te", clo)
-        # Crea un párrafo de texto
-
-                #La funcion esta genera el codigo con canvas.canvas asi se puede unir con el otro formato 
-                def draw(c, doc):
-
-                    
+        # Dibujar un borde
                 
-                    width, height = letter
-                    c.drawImage("images/Logo.png", 1 * inch, height - 1.5 * inch, width=1 * inch, height=0.9 * inch)
+                c.drawString(72, 650, Vendedor)
+                BuenCliente = ("Cliente: " + cliente_data)
+                c.drawString(72, 635, BuenCliente)
+                c.drawString(420, 650, "Fecha : " + fecha2)
+                
+                
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(72, 600, "ADMINISTRACIÓN")
 
-                    #Esta variable otorga el nombre del cliente que elegis al cotizar
-                    BuenCliente = ("Cliente: " + cliente_data)
-                    c.drawString(72, 665, BuenCliente)
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 585, "Francisco Roca 574")
 
-                    #Esta variable toma el mail
-                    BuenVendedor = ("Vendedor: " + Vendedor)
-                    c.drawString(72, 650, BuenVendedor)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 570, "(2705) Rojas - Buenos Aires")
 
-                    #Esta variable toma el valor que pusiste en el tiempo de cotizacion entre 7, 15 o 30 dias
-                    c.drawString(72, 635, "Cotizacion valida por: " + tiempo_cotizacion)
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 555, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                
+                c.drawString(72, 540, "##########################")
+                
+                
+                x_pos=410
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 12)
+                c.drawString(x_pos, 600, "PLANTA INDUSTRIAL")
 
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Ruta Prov. 45 y Carrasco")
 
-                    #Esta variable toma el valor al dia del dolar
-                    BuenDolar = ("DolarVentaBNA : " + str(dolar_hoy))
-                    c.drawString(72, 605, BuenDolar)
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 570, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 555, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 540, "Envases: (02475) 46-3381 L.Rot.")
+                
+                
+                
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
                     
+                c.drawString(72, 620, "Cotizacion valida por: " + tiempo_cotizacion)
+        
 
-                    #Margen del pdf
-                    c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+        # Logo de la empresa
+                c.drawImage(".images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+        # Título y pretexto
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(2.1 * inch, height - 1.54 * inch, "Cotizacion")
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(2.1 * inch, height - 1.37 * inch, "RICARDO ALMAR E HIJOS S.A")
+                
+                
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
 
-                    #Titulo del archivo
-                    c.setFont("Helvetica", 35)
-                    c.drawString(2.1 * inch, height - 1.23 * inch, "Cotizacion")
-                        
+
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
             
-                    #Donde se va a dibujar la tabla de productos a vender
-                    tablo.wrapOn(c, width, height)
-                    tablo.drawOn(c, 72, 450)
+
+
+
+
+            pdf_buffer.seek(0)
             
-                elementos=[parrafo_personalizado]
-                doc.build(elementos, onFirstPage=draw)
-                    
-                    
-
-
-                pdf_buffer.seek(0)
-
-                #Boton de descarga del archivo
-                st.download_button(
-                    label="Descargar Cotizacion",
-                    data=pdf_buffer,
-                    file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
-                    mime="application/pdf"
-                )
+            st.download_button(
+                label="Descargar Cotizacion",
+                data=pdf_buffer,
+                file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
+                mime="application/pdf"
+            )
 
                 
 

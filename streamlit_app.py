@@ -355,7 +355,7 @@ if not st.session_state.carrito.empty:
             carrito_df['Cantidad'] = 1  # Inicializa la columna "Cantidad" con un valor predeterminado de 1
             carrito_go = GridOptionsBuilder.from_dataframe(carrito_df)
             carrito_go.configure_column("Cantidad", editable=True,cellEditor='agNumberCellEditor')  # Habilita la edición para la columna "Cantidad"
-            carrito_go.configure_column("Precio/USD", editable=True)
+            carrito_go.configure_column("Precio/USD", editable=True, type=["numericColumn"],valueFormatter="value.toFixed(3)")  # Formato con 3 decimales
             carrito_go.configure_columns(['Codigo','Articulo','Cantidad','Precio/USD'], columns_to_display='visible')
         else:
             st.session_state.carrito['Precio/Pesos'] = st.session_state.carrito['Precio/USD']*dolar_hoy
@@ -363,42 +363,42 @@ if not st.session_state.carrito.empty:
             carrito_df['Cantidad'] = 1  # Inicializa la columna "Cantidad" con un valor predeterminado de 1
             carrito_go = GridOptionsBuilder.from_dataframe(carrito_df)
             carrito_go.configure_column("Cantidad", editable=True,cellEditor='agNumberCellEditor')  # Habilita la edición para la columna "Cantidad"
-            carrito_go.configure_column("Precio/Pesos", editable=True)
+            carrito_go.configure_column("Precio/Pesos", editable=True, type=["numericColumn"],valueFormatter="value.toFixed(2)")
             carrito_go.configure_columns(['Codigo','Articulo','Cantidad','Precio/Pesos'], columns_to_display='visible')
 
     elif tipo_venta == 'Venta por peso':
         if  tipo_moneda=='Dolar':
             carrito_df = pd.DataFrame(st.session_state.carrito[['Codigo','Articulo','PrecioKg/USD']])
-            carrito_df['Kg_vender'] = 1 # Inicializa la columna "Kg_vender" con un valor predeterminado de 1
+            carrito_df['Cantidad Kgs'] = 1 # Inicializa la columna "Kg_vender" con un valor predeterminado de 1
             carrito_go = GridOptionsBuilder.from_dataframe(carrito_df)
-            carrito_go.configure_column("Cantidad Kg", editable=True,cellEditor='agNumberCellEditor')
-            carrito_go.configure_column("PrecioKg/USD", editable=True)
-            carrito_go.configure_columns(['Articulo','Kg_vender','PrecioKg/USD'], columns_to_display='visible')
+            carrito_go.configure_column("Cantidad Kgs", editable=True,cellEditor='agNumberCellEditor')
+            carrito_go.configure_column("PrecioKg/USD", editable=True, type=["numericColumn"],valueFormatter="value.toFixed(3)")  # Formato con 3 decimales
+            carrito_go.configure_columns(['Codigo','Articulo','Cantidad Kgs','PrecioKg/USD'], columns_to_display='visible')
         else:
             st.session_state.carrito['PrecioKg/Pesos'] = st.session_state.carrito['PrecioKg/USD']*dolar_hoy
             carrito_df = pd.DataFrame(st.session_state.carrito[['Codigo','Articulo','PrecioKg/Pesos']])
-            carrito_df['Kg_vender'] = 1  
+            carrito_df['Cantidad Kgs'] = 1  
             carrito_go = GridOptionsBuilder.from_dataframe(carrito_df)
-            carrito_go.configure_column("Cantidad Kg", editable=True,cellEditor='agNumberCellEditor')  # Habilita la edición para la columna "Cantidad"
-            carrito_go.configure_column("PrecioKg/Pesos", editable=True)
+            carrito_go.configure_column("Cantidad Kgs", editable=True,cellEditor='agNumberCellEditor')  # Habilita la edición para la columna "Cantidad"
+            carrito_go.configure_column("PrecioKg/Pesos", editable=True, type=["numericColumn"],valueFormatter="value.toFixed(2)")
             carrito_go.configure_columns(['Codigo','Articulo','Cantidad/Kgs','PrecioKg/Pesos'], columns_to_display='visible')
 
     elif tipo_venta == 'Venta por metro':
         if  tipo_moneda=='Dolar':
             carrito_df = pd.DataFrame(st.session_state.carrito[['Codigo','Articulo','Precio/USD']])
-            carrito_df['Metros_vender'] = 1  # Inicializa la columna "Metros_vender" con un valor predeterminado de 1
+            carrito_df['Cantidad Mts'] = 1  # Inicializa la columna "Metros_vender" con un valor predeterminado de 1
             carrito_go = GridOptionsBuilder.from_dataframe(carrito_df)
             carrito_go.configure_column("Cantidad Mts", editable=True,cellEditor='agNumberCellEditor')
-            carrito_go.configure_column("Precio/USD", editable=True)
-            carrito_go.configure_columns(['Codigo','Articulo','Cantidad/Mts','Precio/USD'], columns_to_display='visible')
+            carrito_go.configure_column("Precio/USD", editable=True,type=["numericColumn"],valueFormatter="value.toFixed(3)")
+            carrito_go.configure_columns(['Codigo','Articulo','Cantidad Mts','Precio/USD'], columns_to_display='visible')
         else:
             st.session_state.carrito['Precio/Pesos'] = st.session_state.carrito['Precio/USD']*dolar_hoy
             carrito_df = pd.DataFrame(st.session_state.carrito[['Codigo','Articulo','Precio/Pesos']])
-            carrito_df['Metros_vender'] = 1  # Inicializa la columna "Cantidad" con un valor predeterminado de 1
+            carrito_df['Cantidad Mts'] = 1  # Inicializa la columna "Cantidad" con un valor predeterminado de 1
             carrito_go = GridOptionsBuilder.from_dataframe(carrito_df)
             carrito_go.configure_column("Cantidad Mts", editable=True,cellEditor='agNumberCellEditor')  # Habilita la edición para la columna "Cantidad"
-            carrito_go.configure_column("Precio/Pesos", editable=True)
-            carrito_go.configure_columns(['Codigo','Articulo','Cantidad/Mts','Precio/Pesos'], columns_to_display='visible')
+            carrito_go.configure_column("Precio/Pesos", editable=True,type=["numericColumn"],valueFormatter="value.toFixed(2)")
+            carrito_go.configure_columns(['Codigo','Articulo','Cantidad Mts','Precio/Pesos'], columns_to_display='visible')
 
     carrito_go.configure_default_column(editable=False)
     carrito_go.configure_selection(selection_mode='multiple', use_checkbox=True)
@@ -519,15 +519,21 @@ if tipo_venta == 'Venta por unidad' and tipo_moneda == 'Dolar':
                         border: 1px solid #FFA500;  
                     }
                 </style>
-                """, unsafe_allow_html=True)                
+                """, unsafe_allow_html=True)   
     if not st.session_state.carrito.empty:
+
+        # Variable para rastrear si se ha generado una cotización
+        if 'cotizacion_generada' not in st.session_state:
+           st.session_state.cotizacion_generada = False
+        
         if st.button("Cotizar"):
             calculo_carrito_lindo = pd.DataFrame(carrito_lindo['data'])
             if 'Cantidad' not in calculo_carrito_lindo.columns or calculo_carrito_lindo['Cantidad'].isna().any():
                 st.warning('Llene los campos de cantidad.')
             else:
                 # Cálculo de cotización
-                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "Precio/USD", "Cantidad"]]
+                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "Precio/USD", "Cantidad"]].copy()
+                cotiza_df["Precio/USD"] = cotiza_df["Precio/USD"].apply(lambda x: f"{x:.3f}")
                 cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["Precio/USD"]) * float(row["Cantidad"]), 3), axis=1)
                 subtotal = cotiza_df['SubTotal'].sum()
                 iva = round(subtotal * 0.21, 2)
@@ -566,7 +572,7 @@ if tipo_venta == 'Venta por unidad' and tipo_moneda == 'Dolar':
             data.append(["", "", "", "IVA (21%)", f"$ {     iva:,.2f}"])
             data.append(["", "", "", "    TOTAL", f"$ {   total:,.2f}"])                                           
                     
-            colWidths = [60, 160, 65, 60, 120]
+            colWidths = [50, 170, 70, 70, 120]
             tablo = Table(data, colWidths=colWidths)
 
             # Estilo de la tabla
@@ -622,7 +628,7 @@ if tipo_venta == 'Venta por unidad' and tipo_moneda == 'Dolar':
                 if entrega_destino == "Sí":
                     entrega = "entrega en domicilio del cliente"
                 else:
-                    entrega = "retiro en planta/deposito."
+                    entrega = "retiro en planta/deposito"
                 texto_nota = f"Nota: la presente cotización tiene una validez de {tiempo_cotizacion} y con modalidad {entrega}."
                 c.setFont("Helvetica-Bold", 9)
                 c.drawString(72, 55, texto_nota)
@@ -730,10 +736,36 @@ if tipo_venta == 'Venta por unidad' and tipo_moneda == 'Dolar':
             st.download_button(
                         label="Descargar Cotizacion",
                         data=pdf_buffer,
-                        file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
+                        file_name="Cotizacion_Cliente"+ "_" + cliente_codigo + "_" + fecha + ".pdf",
                         mime="application/pdf",
                         key="download_button",
-            )
+            )    
+
+            st.session_state.cotizacion_generada = True
+        
+        if st.session_state.cotizacion_generada:    
+            def resetall_filtros():
+                # Resetea los filtros a sus valores por defecto
+                st.session_state.reset_filtros = True
+                st.session_state.codigo_seleccionado = 'Todos'
+                st.session_state.categoria_seleccionada = 'Todos'
+                st.session_state.tela_madre_seleccionado = 'Todos'
+                st.session_state.tela_seleccionada = 'Todos'
+                st.session_state.corte_seleccionado = 'Todos'
+                st.session_state.ancho_seleccionado = 'Todos'
+                st.session_state.peso_seleccionado = 'Todos'
+                # Asigna el dataframe original al df_filtrado
+                df_filtrado = df
+
+
+         # Botón para limpiar/reiniciar la aplicación
+        if st.button("Nueva Cotizacion"):
+                   # Limpiar el estado de la sesión y recargar la aplicación
+            st.session_state.clear()  # Limpia todo el estado guardado
+            resetall_filtros()
+            st.rerun()  # Recarga la aplicación
+         
+#Fin Unidades/Dolar
 elif tipo_venta == 'Venta por unidad' and tipo_moneda == 'Peso':
     st.markdown("""
                 <style>
@@ -760,14 +792,18 @@ elif tipo_venta == 'Venta por unidad' and tipo_moneda == 'Peso':
                 </style>
                 """, unsafe_allow_html=True)                
     if not st.session_state.carrito.empty:
+
+        # Variable para rastrear si se ha generado una cotización
+        if 'cotizacion_generada' not in st.session_state:
+           st.session_state.cotizacion_generada = False
         if st.button("Cotizar"):
             calculo_carrito_lindo = pd.DataFrame(carrito_lindo['data'])
             if 'Cantidad' not in calculo_carrito_lindo.columns or calculo_carrito_lindo['Cantidad'].isna().any():
                 st.warning('Llene los campos de cantidad.')
             else:
                 # Cálculo de cotización
-                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "Precio/Pesos", "Cantidad"]]
-                #cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: "{:.2f}".format(round(float(row["Precio/Pesos"]) * float(row["Cantidad"]), 2)), axis=1)
+                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "Precio/Pesos", "Cantidad"]].copy()
+                cotiza_df["Precio/Pesos"] = cotiza_df["Precio/Pesos"].apply(lambda x: f"{x:.2f}")
                 cotiza_df["SubTotal"] = cotiza_df.apply(lambda row:round(float(row["Precio/Pesos"]) * float(row["Cantidad"]), 2), axis=1)
                 subtotal = cotiza_df['SubTotal'].sum()
                 iva = round(subtotal * 0.21, 2)
@@ -806,7 +842,7 @@ elif tipo_venta == 'Venta por unidad' and tipo_moneda == 'Peso':
             data.append(["", "", "", "IVA (21%)", f"$ {     iva:,.2f}"])
             data.append(["", "", "", "    TOTAL", f"$ {   total:,.2f}"])                                           
                     
-            colWidths = [60, 160, 65, 60, 120]
+            colWidths = [50, 170, 70, 70, 120]
             tablo = Table(data, colWidths=colWidths)
 
             # Estilo de la tabla
@@ -862,7 +898,7 @@ elif tipo_venta == 'Venta por unidad' and tipo_moneda == 'Peso':
                 if entrega_destino == "Sí":
                     entrega = "entrega en domicilio del cliente"
                 else:
-                    entrega = "retiro en planta/deposito."
+                    entrega = "retiro en planta/deposito"
                 texto_nota = f"Nota: la presente cotización tiene una validez de {tiempo_cotizacion} y con modalidad {entrega}."
                 c.setFont("Helvetica-Bold", 9)
                 c.drawString(72, 55, texto_nota)
@@ -970,21 +1006,1127 @@ elif tipo_venta == 'Venta por unidad' and tipo_moneda == 'Peso':
             st.download_button(
                         label="Descargar Cotizacion",
                         data=pdf_buffer,
-                        file_name="Cotizacion " + cliente_codigo + " " + fecha + ".pdf",
+                        file_name="Cotizacion_Cliente"+ "_" + cliente_codigo + "_" + fecha + ".pdf",
                         mime="application/pdf",
                         key="download_button",
             )
 
+            st.session_state.cotizacion_generada = True #activo la flag que se cotizo
+        
+        if st.session_state.cotizacion_generada:    
+            def resetall_filtros():
+                # Resetea los filtros a sus valores por defecto
+                st.session_state.reset_filtros = True
+                st.session_state.codigo_seleccionado = 'Todos'
+                st.session_state.categoria_seleccionada = 'Todos'
+                st.session_state.tela_madre_seleccionado = 'Todos'
+                st.session_state.tela_seleccionada = 'Todos'
+                st.session_state.corte_seleccionado = 'Todos'
+                st.session_state.ancho_seleccionado = 'Todos'
+                st.session_state.peso_seleccionado = 'Todos'
+                # Asigna el dataframe original al df_filtrado
+                df_filtrado = df
+
+
+         # Botón para limpiar/reiniciar la aplicación
+        if st.button("Nueva Cotizacion"):
+                   # Limpiar el estado de la sesión y recargar la aplicación
+            st.session_state.clear()  # Limpia todo el estado guardado
+            resetall_filtros()
+            st.rerun()  # Recarga la aplicación  
+#Fin Unidades/Peso
+elif tipo_venta == 'Venta por peso' and tipo_moneda == 'Dolar':
+    st.markdown("""
+                <style>
+                    /* Aplica estilo a todos los botones de Streamlit */
+                    .stButton>button {
+                        font-size: 60px;            /* Tamaño de la fuente */
+                        background-color: #FFFFFF;  /* Fondo blanco */
+                        color: #333333;             /* Texto gris oscuro */
+                        border: 1px solid #DDDDDD;  /* Borde sutil */
+                        padding: 18px 36px;         /* Espaciado alrededor del texto */
+                        border-radius: 12px;        /* Bordes redondeados */
+                    }
+                    .stButton>button:hover {
+                        background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                        color: #FFA500;             /* Naranja para el texto en hover */
+                        border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                    }
+                    .stButton>button:active,
+                    .stButton>button:focus {
+                        background-color: #FFFFFF;   
+                        color: #FFA500;             
+                        border: 1px solid #FFA500;  
+                    }
+                </style>
+                """, unsafe_allow_html=True)                
+    if not st.session_state.carrito.empty:
+
+        # Variable para rastrear si se ha generado una cotización
+        if 'cotizacion_generada' not in st.session_state:
+           st.session_state.cotizacion_generada = False
+
+        if st.button("Cotizar"):
+            calculo_carrito_lindo = pd.DataFrame(carrito_lindo['data'])
+            if 'Cantidad Kgs' not in calculo_carrito_lindo.columns or calculo_carrito_lindo['Cantidad Kgs'].isna().any():
+                st.warning('Llene los campos de cantidad.')
+            else:
+                # Cálculo de cotización
+                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "PrecioKg/USD", "Cantidad Kgs"]].copy()
+                cotiza_df["PrecioKg/USD"] = cotiza_df["PrecioKg/USD"].apply(lambda x: f"{x:.3f}")
+                cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["PrecioKg/USD"]) * float(row["Cantidad Kgs"]), 3), axis=1)
+                subtotal = cotiza_df['SubTotal'].sum()
+                iva = round(subtotal * 0.21, 2)
+                total = round(subtotal + iva, 2)
+
+                # Mostrar resumen en la app
+                # Usar st.dataframe para mostrar el DataFrame sin la columna de índice
+                st.dataframe(cotiza_df, hide_index=True,use_container_width=True)
+
+                # Alinear el texto a la derecha utilizando HTML dentro de Markdown
+                st.markdown(f"<div style='text-align: right;'>SUBTOTAL: ${subtotal:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>I.V.A: ${iva:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>TOTAL COTIZACION: ${total:,.2f}</div>", unsafe_allow_html=True)              
+             
+                # Config para el pdf
+                pagesize     = letter
+                leftMargin   = 18  # 1 pulgada   
+                rightMargin  = 18  # 1 pulgada
+                topMargin    = 180 # 1 pulgada
+                bottomMargin = 0   # 1 pulgada           
+                  
+             # if 'Cantidad' in cotiza_df.columns and not cotiza_df['Cantidad'].isna().any():
+             #     if cotiza_df['Cantidad'].apply(lambda x: str(x).replace('.', '', 1).isdigit()).all():           
+            data = [
+                    ['Codigo', 'Articulo', 'PrecioKg/USD', 'Cantidad Kgs', 'SubTotal']
+                ]
+            for index, row in cotiza_df.iterrows():
+                                # Asegúrate de que estás accediendo a los valores correctamente
+                                data.append([row["Codigo"], 
+                                             row["Articulo"], 
+                                             row["PrecioKg/USD"], 
+                                             row["Cantidad Kgs"],  
+                                             f"$ {row['SubTotal']:,.2f}"])              
+                    
+            data.append(["", "", "", "SUBTOTAL ", f"$ {subtotal:,.2f}"])
+            data.append(["", "", "", "IVA (21%)", f"$ {     iva:,.2f}"])
+            data.append(["", "", "", "    TOTAL", f"$ {   total:,.2f}"])                                           
+                    
+            colWidths = [50, 170, 70, 70, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+            # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+            cliente_data   = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            condicion_data = str(poolresultadocond.iloc[0,1])
+                
+            pdf_buffer = BytesIO()
+
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
+
+            # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
+            
+            # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+            # Función para dibujar en el PDF
+            def draw(c, doc):
+                width, height = letter
+                c.setTitle("Cotización Ricardo Almar e Hijos S.A.")  # Establecer el título
+
+                # Datos Cliente/Cotizacion
+                BuenCliente = ("Cliente: " + cliente_codigo + "-" + cliente_data)
+                c.drawString(72, 560, BuenCliente)
+                if tipo_moneda == "Dolar":
+                    MonCotiza = "Dolares"
+                else:
+                    MonCotiza = f"Pesos considerándose un tipo de cambio de USD 1 = {dolar_hoy}"
+                Moneda = ("Cotizacion expresada en: " + MonCotiza)
+                c.drawString(72, 540, Moneda)
+                                              
+                c.drawString(72, 520, "Condición de Pago: " + condicion_data)
+                
+                VendedorCot = ("Vendedor: " + Vendedor)
+                c.drawString(72, 500, VendedorCot) 
+                
+                if entrega_destino == "Sí":
+                    entrega = "entrega en domicilio del cliente"
+                else:
+                    entrega = "retiro en planta/deposito"
+                texto_nota = f"Nota: la presente cotización tiene una validez de {tiempo_cotizacion} y con modalidad {entrega}."
+                c.setFont("Helvetica-Bold", 9)
+                c.drawString(72, 55, texto_nota)
+                
+                #c.drawString(72, 500, "Cotización válida por: " + tiempo_cotizacion)
+                
+                line_y = 575  # Coordenada Y donde quieres que esté la línea
+                c.setStrokeColorRGB(0, 0, 0)  # Color negro para la línea
+                c.setLineWidth(1)  # Grosor de la línea
+                c.line(72, line_y, width - 72, line_y)  # Dibujar línea desde el margen izquierdo (72) hasta el derecho (width - 72)
+
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(72, 645, "ADMINISTRACIÓN")
+
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 630, "Francisco Roca 574")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 600, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                c.drawString(72, 585, "www.almar.com.ar")
+                
+                x_pos=400
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(x_pos, 645, "PLANTA INDUSTRIAL")
+
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 630, "Ruta Prov. 45 y Carrasco")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 600, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Envases: (02475) 46-3381 L.Rot.")
+                               
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
+                # Logo de la empresa
+                c.drawImage("images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+                ## Título y pretexto
+                c.setFont("HandelGothic BT", 16)
+                c.drawString(320, 730, "Cotización")
+
+                # Fecha junto a "Cotización"
+                c.setFont("Helvetica", 12)
+                c.drawString(415, 730, f"Fecha : {fecha2}")
+
+                # Deja un espacio vertical ajustando la coordenada y
+                separacion_entre_textos = 10  # Ajusta este valor según el espacio que desees
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(150, 670, "RICARDO ALMAR e HIJOS S.A.")              
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
+           
+
+            pdf_buffer.seek(0)
+
+            st.markdown("""
+                    <style>
+                        /* Aplica estilo a todos los botones de descarga de Streamlit */
+                        .stDownloadButton>button {
+                              font-size: 40px;               /* Tamaño de la fuente */
+                              background-color: #FFFFFF;     /* Fondo blanco */
+                              color: #333333;                /* Texto gris oscuro */
+                              border: 1px solid #DDDDDD;     /* Borde sutil */
+                              padding: 18px 36px;            /* Espaciado alrededor del texto */
+                              border-radius: 12px;           /* Bordes redondeados */
+                        }
+
+                        .stDownloadButton>button:hover {
+                            background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                            color: #FFA500;             /* Naranja para el texto en hover */
+                            border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                        }
+
+                         .stDownloadButton>button:active,
+                         .stDownloadButton>button:focus {
+                            background-color: #FFFFFF;   
+                            color: #FFA500              
+                            border: 1px solid #FFA500;  
+                        }
+                    </style>
+            """, unsafe_allow_html=True)
+            
+            st.download_button(
+                        label="Descargar Cotizacion",
+                        data=pdf_buffer,
+                        file_name="Cotizacion_Cliente"+ "_" + cliente_codigo + "_" + fecha + ".pdf",
+                        mime="application/pdf",
+                        key="download_button",
+            )
+            st.session_state.cotizacion_generada = True #activo la flag que se cotizo
+
+        if st.session_state.cotizacion_generada: 
+            def resetall_filtros():
+                    # Resetea los filtros a sus valores por defecto
+                st.session_state.reset_filtros = True
+                st.session_state.codigo_seleccionado = 'Todos'
+                st.session_state.categoria_seleccionada = 'Todos'
+                st.session_state.tela_madre_seleccionado = 'Todos'
+                st.session_state.tela_seleccionada = 'Todos'
+                st.session_state.corte_seleccionado = 'Todos'
+                st.session_state.ancho_seleccionado = 'Todos'
+                st.session_state.peso_seleccionado = 'Todos'
+                # Asigna el dataframe original al df_filtrado
+                df_filtrado = df
+
+         # Botón para limpiar/reiniciar la aplicación
+        if st.button("Nueva Cotizacion"):
+                   # Limpiar el estado de la sesión y recargar la aplicación
+            st.session_state.clear()  # Limpia todo el estado guardado
+            resetall_filtros()
+            st.rerun()  # Recarga la aplicación
+         
+#Fin Peso/Dolar
+elif tipo_venta == 'Venta por peso' and tipo_moneda == 'Peso':
+    st.markdown("""
+                <style>
+                    /* Aplica estilo a todos los botones de Streamlit */
+                    .stButton>button {
+                        font-size: 60px;            /* Tamaño de la fuente */
+                        background-color: #FFFFFF;  /* Fondo blanco */
+                        color: #333333;             /* Texto gris oscuro */
+                        border: 1px solid #DDDDDD;  /* Borde sutil */
+                        padding: 18px 36px;         /* Espaciado alrededor del texto */
+                        border-radius: 12px;        /* Bordes redondeados */
+                    }
+                    .stButton>button:hover {
+                        background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                        color: #FFA500;             /* Naranja para el texto en hover */
+                        border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                    }
+                    .stButton>button:active,
+                    .stButton>button:focus {
+                        background-color: #FFFFFF;   
+                        color: #FFA500;             
+                        border: 1px solid #FFA500;  
+                    }
+                </style>
+                """, unsafe_allow_html=True)                
+    if not st.session_state.carrito.empty:
+
+        # Variable para rastrear si se ha generado una cotización
+        if 'cotizacion_generada' not in st.session_state:
+           st.session_state.cotizacion_generada = False
+
+        if st.button("Cotizar"):
+            calculo_carrito_lindo = pd.DataFrame(carrito_lindo['data'])
+            if 'Cantidad Kgs' not in calculo_carrito_lindo.columns or calculo_carrito_lindo['Cantidad Kgs'].isna().any():
+                st.warning('Llene los campos de cantidad.')
+            else:
+                # Cálculo de cotización
+                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "PrecioKg/Pesos", "Cantidad Kgs"]].copy()
+                cotiza_df["PrecioKg/Pesos"] = cotiza_df["PrecioKg/Pesos"].apply(lambda x: f"{x:.2f}")
+                cotiza_df["SubTotal"] = cotiza_df.apply(lambda row:round(float(row["PrecioKg/Pesos"]) * float(row["Cantidad Kgs"]), 2), axis=1)
+                subtotal = cotiza_df['SubTotal'].sum()
+                iva = round(subtotal * 0.21, 2)
+                total = round(subtotal + iva, 2)
+
+                # Mostrar resumen en la app
+                # Usar st.dataframe para mostrar el DataFrame sin la columna de índice
+                st.dataframe(cotiza_df, hide_index=True,use_container_width=True)
+
+                # Alinear el texto a la derecha utilizando HTML dentro de Markdown
+                st.markdown(f"<div style='text-align: right;'>SUBTOTAL: ${subtotal:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>I.V.A: ${iva:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>TOTAL COTIZACION: ${total:,.2f}</div>", unsafe_allow_html=True)              
+             
+                # Config para el pdf
+                pagesize     = letter
+                leftMargin   = 18  # 1 pulgada   
+                rightMargin  = 18  # 1 pulgada
+                topMargin    = 180 # 1 pulgada
+                bottomMargin = 0   # 1 pulgada           
+                  
+             # if 'Cantidad' in cotiza_df.columns and not cotiza_df['Cantidad'].isna().any():
+             #     if cotiza_df['Cantidad'].apply(lambda x: str(x).replace('.', '', 1).isdigit()).all():           
+            data = [
+                    ['Codigo', 'Articulo', 'PrecioKg/Pesos', 'Cantidad Kgs', 'SubTotal']
+                ]
+            for index, row in cotiza_df.iterrows():
+                                # Asegúrate de que estás accediendo a los valores correctamente
+                                data.append([row["Codigo"], 
+                                             row["Articulo"], 
+                                             row["PrecioKg/Pesos"], 
+                                             row["Cantidad Kgs"],  
+                                             f"$ {row['SubTotal']:,.2f}"])              
+                    
+            data.append(["", "", "", "SUBTOTAL ", f"$ {subtotal:,.2f}"])
+            data.append(["", "", "", "IVA (21%)", f"$ {     iva:,.2f}"])
+            data.append(["", "", "", "    TOTAL", f"$ {   total:,.2f}"])                                           
+            
+            colWidths = [50, 170, 70, 70, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+            # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+            cliente_data   = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            condicion_data = str(poolresultadocond.iloc[0,1])
+                
+            pdf_buffer = BytesIO()
+
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
+
+            # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
+            
+            # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+            # Función para dibujar en el PDF
+            def draw(c, doc):
+                width, height = letter
+                c.setTitle("Cotización Ricardo Almar e Hijos S.A.")  # Establecer el título
+
+                # Datos Cliente/Cotizacion
+                BuenCliente = ("Cliente: " + cliente_codigo + "-" + cliente_data)
+                c.drawString(72, 560, BuenCliente)
+                if tipo_moneda == "Dolar":
+                    MonCotiza = "Dolares"
+                else:
+                    MonCotiza = f"Pesos considerándose un tipo de cambio de USD 1 = {dolar_hoy}"
+                Moneda = ("Cotizacion expresada en: " + MonCotiza)
+                c.drawString(72, 540, Moneda)
+                                              
+                c.drawString(72, 520, "Condición de Pago: " + condicion_data)
+                
+                VendedorCot = ("Vendedor: " + Vendedor)
+                c.drawString(72, 500, VendedorCot) 
+                
+                if entrega_destino == "Sí":
+                    entrega = "entrega en domicilio del cliente"
+                else:
+                    entrega = "retiro en planta/deposito"
+                texto_nota = f"Nota: la presente cotización tiene una validez de {tiempo_cotizacion} y con modalidad {entrega}."
+                c.setFont("Helvetica-Bold", 9)
+                c.drawString(72, 55, texto_nota)
+                
+                #c.drawString(72, 500, "Cotización válida por: " + tiempo_cotizacion)
+                
+                line_y = 575  # Coordenada Y donde quieres que esté la línea
+                c.setStrokeColorRGB(0, 0, 0)  # Color negro para la línea
+                c.setLineWidth(1)  # Grosor de la línea
+                c.line(72, line_y, width - 72, line_y)  # Dibujar línea desde el margen izquierdo (72) hasta el derecho (width - 72)
+
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(72, 645, "ADMINISTRACIÓN")
+
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 630, "Francisco Roca 574")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 600, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                c.drawString(72, 585, "www.almar.com.ar")
+                
+                x_pos=400
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(x_pos, 645, "PLANTA INDUSTRIAL")
+
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 630, "Ruta Prov. 45 y Carrasco")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 600, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Envases: (02475) 46-3381 L.Rot.")
+                               
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
+                # Logo de la empresa
+                c.drawImage("images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+                ## Título y pretexto
+                c.setFont("HandelGothic BT", 16)
+                c.drawString(320, 730, "Cotización")
+
+                # Fecha junto a "Cotización"
+                c.setFont("Helvetica", 12)
+                c.drawString(415, 730, f"Fecha : {fecha2}")
+
+                # Deja un espacio vertical ajustando la coordenada y
+                separacion_entre_textos = 10  # Ajusta este valor según el espacio que desees
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(150, 670, "RICARDO ALMAR e HIJOS S.A.")              
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
+           
+
+            pdf_buffer.seek(0)
+
+            st.markdown("""
+                    <style>
+                        /* Aplica estilo a todos los botones de descarga de Streamlit */
+                        .stDownloadButton>button {
+                              font-size: 40px;               /* Tamaño de la fuente */
+                              background-color: #FFFFFF;     /* Fondo blanco */
+                              color: #333333;                /* Texto gris oscuro */
+                              border: 1px solid #DDDDDD;     /* Borde sutil */
+                              padding: 18px 36px;            /* Espaciado alrededor del texto */
+                              border-radius: 12px;           /* Bordes redondeados */
+                        }
+
+                        .stDownloadButton>button:hover {
+                            background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                            color: #FFA500;             /* Naranja para el texto en hover */
+                            border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                        }
+
+                         .stDownloadButton>button:active,
+                         .stDownloadButton>button:focus {
+                            background-color: #FFFFFF;   
+                            color: #FFA500              
+                            border: 1px solid #FFA500;  
+                        }
+                    </style>
+            """, unsafe_allow_html=True)
+            
+            st.download_button(
+                        label="Descargar Cotizacion",
+                        data=pdf_buffer,
+                        file_name="Cotizacion_Cliente"+ "_" + cliente_codigo + "_" + fecha + ".pdf",
+                        mime="application/pdf",
+                        key="download_button",
+            )
+            st.session_state.cotizacion_generada = True #activo la flag que se cotizo
+        if st.session_state.cotizacion_generada:    
+            def resetall_filtros():
+                # Resetea los filtros a sus valores por defecto
+                st.session_state.reset_filtros = True
+                st.session_state.codigo_seleccionado = 'Todos'
+                st.session_state.categoria_seleccionada = 'Todos'
+                st.session_state.tela_madre_seleccionado = 'Todos'
+                st.session_state.tela_seleccionada = 'Todos'
+                st.session_state.corte_seleccionado = 'Todos'
+                st.session_state.ancho_seleccionado = 'Todos'
+                st.session_state.peso_seleccionado = 'Todos'
+                # Asigna el dataframe original al df_filtrado
+                df_filtrado = df
+
+
+         # Botón para limpiar/reiniciar la aplicación
+        if st.button("Nueva Cotizacion"):
+                   # Limpiar el estado de la sesión y recargar la aplicación
+            st.session_state.clear()  # Limpia todo el estado guardado
+            resetall_filtros()
+            st.rerun()  # Recarga la aplicación  
+        
+#Fin Peso/Peso
+elif tipo_venta == 'Venta por metro' and tipo_moneda == 'Dolar':
+    st.markdown("""
+                <style>
+                    /* Aplica estilo a todos los botones de Streamlit */
+                    .stButton>button {
+                        font-size: 60px;            /* Tamaño de la fuente */
+                        background-color: #FFFFFF;  /* Fondo blanco */
+                        color: #333333;             /* Texto gris oscuro */
+                        border: 1px solid #DDDDDD;  /* Borde sutil */
+                        padding: 18px 36px;         /* Espaciado alrededor del texto */
+                        border-radius: 12px;        /* Bordes redondeados */
+                    }
+                    .stButton>button:hover {
+                        background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                        color: #FFA500;             /* Naranja para el texto en hover */
+                        border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                    }
+                    .stButton>button:active,
+                    .stButton>button:focus {
+                        background-color: #FFFFFF;   
+                        color: #FFA500;             
+                        border: 1px solid #FFA500;  
+                    }
+                </style>
+                """, unsafe_allow_html=True)                
+    if not st.session_state.carrito.empty:
+
+        # Variable para rastrear si se ha generado una cotización
+        if 'cotizacion_generada' not in st.session_state:
+           st.session_state.cotizacion_generada = False
+        if st.button("Cotizar"):
+            calculo_carrito_lindo = pd.DataFrame(carrito_lindo['data'])
+            if 'Cantidad Mts' not in calculo_carrito_lindo.columns or calculo_carrito_lindo['Cantidad Mts'].isna().any():
+                st.warning('Llene los campos de cantidad.')
+            else:
+                # Cálculo de cotización
+                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "Precio/USD", "Cantidad Mts"]].copy()
+                cotiza_df["Precio/USD"] = cotiza_df["Precio/USD"].apply(lambda x: f"{x:.3f}")
+                cotiza_df["SubTotal"] = cotiza_df.apply(lambda row: round(float(row["Precio/USD"]) * float(row["Cantidad Mts"]), 3), axis=1)
+                subtotal = cotiza_df['SubTotal'].sum()
+                iva = round(subtotal * 0.21, 2)
+                total = round(subtotal + iva, 2)
+
+                # Mostrar resumen en la app
+                # Usar st.dataframe para mostrar el DataFrame sin la columna de índice
+                st.dataframe(cotiza_df, hide_index=True,use_container_width=True)
+
+                # Alinear el texto a la derecha utilizando HTML dentro de Markdown
+                st.markdown(f"<div style='text-align: right;'>SUBTOTAL: ${subtotal:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>I.V.A: ${iva:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>TOTAL COTIZACION: ${total:,.2f}</div>", unsafe_allow_html=True)              
+             
+                # Config para el pdf
+                pagesize     = letter
+                leftMargin   = 18  # 1 pulgada   
+                rightMargin  = 18  # 1 pulgada
+                topMargin    = 180 # 1 pulgada
+                bottomMargin = 0   # 1 pulgada           
+                  
+             # if 'Cantidad' in cotiza_df.columns and not cotiza_df['Cantidad'].isna().any():
+             #     if cotiza_df['Cantidad'].apply(lambda x: str(x).replace('.', '', 1).isdigit()).all():           
+            data = [
+                    ['Codigo', 'Articulo', 'Precio/USD', 'Cantidad Mts', 'SubTotal']
+                ]
+            for index, row in cotiza_df.iterrows():
+                                # Asegúrate de que estás accediendo a los valores correctamente
+                                data.append([row["Codigo"], 
+                                             row["Articulo"], 
+                                             row["Precio/USD"], 
+                                             row["Cantidad Mts"],  
+                                             f"$ {row['SubTotal']:,.2f}"])              
+                    
+            data.append(["", "", "", "SUBTOTAL ", f"$ {subtotal:,.2f}"])
+            data.append(["", "", "", "IVA (21%)", f"$ {     iva:,.2f}"])
+            data.append(["", "", "", "    TOTAL", f"$ {   total:,.2f}"])                                           
+                    
+            colWidths = [50, 170, 70, 70, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+            # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+            cliente_data   = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            condicion_data = str(poolresultadocond.iloc[0,1])
+                
+            pdf_buffer = BytesIO()
+
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
+
+            # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
+            
+            # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+            # Función para dibujar en el PDF
+            def draw(c, doc):
+                width, height = letter
+                c.setTitle("Cotización Ricardo Almar e Hijos S.A.")  # Establecer el título
+
+                # Datos Cliente/Cotizacion
+                BuenCliente = ("Cliente: " + cliente_codigo + "-" + cliente_data)
+                c.drawString(72, 560, BuenCliente)
+                if tipo_moneda == "Dolar":
+                    MonCotiza = "Dolares"
+                else:
+                    MonCotiza = f"Pesos considerándose un tipo de cambio de USD 1 = {dolar_hoy}"
+                Moneda = ("Cotizacion expresada en: " + MonCotiza)
+                c.drawString(72, 540, Moneda)
+                                              
+                c.drawString(72, 520, "Condición de Pago: " + condicion_data)
+                
+                VendedorCot = ("Vendedor: " + Vendedor)
+                c.drawString(72, 500, VendedorCot) 
+                
+                if entrega_destino == "Sí":
+                    entrega = "entrega en domicilio del cliente"
+                else:
+                    entrega = "retiro en planta/deposito"
+                texto_nota = f"Nota: la presente cotización tiene una validez de {tiempo_cotizacion} y con modalidad {entrega}."
+                c.setFont("Helvetica-Bold", 9)
+                c.drawString(72, 55, texto_nota)
+                
+                #c.drawString(72, 500, "Cotización válida por: " + tiempo_cotizacion)
+                
+                line_y = 575  # Coordenada Y donde quieres que esté la línea
+                c.setStrokeColorRGB(0, 0, 0)  # Color negro para la línea
+                c.setLineWidth(1)  # Grosor de la línea
+                c.line(72, line_y, width - 72, line_y)  # Dibujar línea desde el margen izquierdo (72) hasta el derecho (width - 72)
+
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(72, 645, "ADMINISTRACIÓN")
+
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 630, "Francisco Roca 574")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 600, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                c.drawString(72, 585, "www.almar.com.ar")
+                
+                x_pos=400
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(x_pos, 645, "PLANTA INDUSTRIAL")
+
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 630, "Ruta Prov. 45 y Carrasco")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 600, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Envases: (02475) 46-3381 L.Rot.")
+                               
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
+                # Logo de la empresa
+                c.drawImage("images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+                ## Título y pretexto
+                c.setFont("HandelGothic BT", 16)
+                c.drawString(320, 730, "Cotización")
+
+                # Fecha junto a "Cotización"
+                c.setFont("Helvetica", 12)
+                c.drawString(415, 730, f"Fecha : {fecha2}")
+
+                # Deja un espacio vertical ajustando la coordenada y
+                separacion_entre_textos = 10  # Ajusta este valor según el espacio que desees
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(150, 670, "RICARDO ALMAR e HIJOS S.A.")              
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
+           
+
+            pdf_buffer.seek(0)
+
+            st.markdown("""
+                    <style>
+                        /* Aplica estilo a todos los botones de descarga de Streamlit */
+                        .stDownloadButton>button {
+                              font-size: 40px;               /* Tamaño de la fuente */
+                              background-color: #FFFFFF;     /* Fondo blanco */
+                              color: #333333;                /* Texto gris oscuro */
+                              border: 1px solid #DDDDDD;     /* Borde sutil */
+                              padding: 18px 36px;            /* Espaciado alrededor del texto */
+                              border-radius: 12px;           /* Bordes redondeados */
+                        }
+
+                        .stDownloadButton>button:hover {
+                            background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                            color: #FFA500;             /* Naranja para el texto en hover */
+                            border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                        }
+
+                         .stDownloadButton>button:active,
+                         .stDownloadButton>button:focus {
+                            background-color: #FFFFFF;   
+                            color: #FFA500              
+                            border: 1px solid #FFA500;  
+                        }
+                    </style>
+            """, unsafe_allow_html=True)
+            
+            st.download_button(
+                        label="Descargar Cotizacion",
+                        data=pdf_buffer,
+                        file_name="Cotizacion_Cliente"+ "_" + cliente_codigo + "_" + fecha + ".pdf",
+                        mime="application/pdf",
+                        key="download_button",
+            )
+            st.session_state.cotizacion_generada = True #activo la flag que se cotizo
+        if st.session_state.cotizacion_generada:    
+            def resetall_filtros():
+                # Resetea los filtros a sus valores por defecto
+                st.session_state.reset_filtros = True
+                st.session_state.codigo_seleccionado = 'Todos'
+                st.session_state.categoria_seleccionada = 'Todos'
+                st.session_state.tela_madre_seleccionado = 'Todos'
+                st.session_state.tela_seleccionada = 'Todos'
+                st.session_state.corte_seleccionado = 'Todos'
+                st.session_state.ancho_seleccionado = 'Todos'
+                st.session_state.peso_seleccionado = 'Todos'
+                # Asigna el dataframe original al df_filtrado
+                df_filtrado = df
+
+
+         # Botón para limpiar/reiniciar la aplicación
+        if st.button("Nueva Cotizacion"):
+                   # Limpiar el estado de la sesión y recargar la aplicación
+            st.session_state.clear()  # Limpia todo el estado guardado
+            resetall_filtros()
+            st.rerun()  # Recarga la aplicación
+#Fin Metro/Dolar
+elif tipo_venta == 'Venta por metro' and tipo_moneda == 'Peso':
+    st.markdown("""
+                <style>
+                    /* Aplica estilo a todos los botones de Streamlit */
+                    .stButton>button {
+                        font-size: 60px;            /* Tamaño de la fuente */
+                        background-color: #FFFFFF;  /* Fondo blanco */
+                        color: #333333;             /* Texto gris oscuro */
+                        border: 1px solid #DDDDDD;  /* Borde sutil */
+                        padding: 18px 36px;         /* Espaciado alrededor del texto */
+                        border-radius: 12px;        /* Bordes redondeados */
+                    }
+                    .stButton>button:hover {
+                        background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                        color: #FFA500;             /* Naranja para el texto en hover */
+                        border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                    }
+                    .stButton>button:active,
+                    .stButton>button:focus {
+                        background-color: #FFFFFF;   
+                        color: #FFA500;             
+                        border: 1px solid #FFA500;  
+                    }
+                </style>
+                """, unsafe_allow_html=True)                
+    if not st.session_state.carrito.empty:
+
+        # Variable para rastrear si se ha generado una cotización
+        if 'cotizacion_generada' not in st.session_state:
+           st.session_state.cotizacion_generada = False
+
+        if st.button("Cotizar"):
+            calculo_carrito_lindo = pd.DataFrame(carrito_lindo['data'])
+            if 'Cantidad Mts' not in calculo_carrito_lindo.columns or calculo_carrito_lindo['Cantidad Mts'].isna().any():
+                st.warning('Llene los campos de cantidad.')
+            else:
+                # Cálculo de cotización
+                cotiza_df = carrito_lindo.data[["Codigo", "Articulo", "Precio/Pesos", "Cantidad Mts"]].copy()
+                cotiza_df["Precio/Pesos"] = cotiza_df["Precio/Pesos"].apply(lambda x: f"{x:.2f}")
+                cotiza_df["SubTotal"] = cotiza_df.apply(lambda row:round(float(row["Precio/Pesos"]) * float(row["Cantidad Mts"]), 2), axis=1)
+                subtotal = cotiza_df['SubTotal'].sum()
+                iva = round(subtotal * 0.21, 2)
+                total = round(subtotal + iva, 2)
+
+                # Mostrar resumen en la app
+                # Usar st.dataframe para mostrar el DataFrame sin la columna de índice
+                st.dataframe(cotiza_df, hide_index=True,use_container_width=True)
+
+                # Alinear el texto a la derecha utilizando HTML dentro de Markdown
+                st.markdown(f"<div style='text-align: right;'>SUBTOTAL: ${subtotal:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>I.V.A: ${iva:,.2f}</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='text-align: right;'>TOTAL COTIZACION: ${total:,.2f}</div>", unsafe_allow_html=True)              
+             
+                # Config para el pdf
+                pagesize     = letter
+                leftMargin   = 18  # 1 pulgada   
+                rightMargin  = 18  # 1 pulgada
+                topMargin    = 180 # 1 pulgada
+                bottomMargin = 0   # 1 pulgada           
+                  
+             # if 'Cantidad' in cotiza_df.columns and not cotiza_df['Cantidad'].isna().any():
+             #     if cotiza_df['Cantidad'].apply(lambda x: str(x).replace('.', '', 1).isdigit()).all():           
+            data = [
+                    ['Codigo', 'Articulo', 'Precio/Pesos', 'Cantidad Mts', 'SubTotal']
+                ]
+            for index, row in cotiza_df.iterrows():
+                                # Asegúrate de que estás accediendo a los valores correctamente
+                                data.append([row["Codigo"], 
+                                             row["Articulo"], 
+                                             row["Precio/Pesos"], 
+                                             row["Cantidad Mts"],  
+                                             f"$ {row['SubTotal']:,.2f}"])              
+                    
+            data.append(["", "", "", "SUBTOTAL ", f"$ {subtotal:,.2f}"])
+            data.append(["", "", "", "IVA (21%)", f"$ {     iva:,.2f}"])
+            data.append(["", "", "", "    TOTAL", f"$ {   total:,.2f}"])                                           
+            
+            colWidths = [50, 170, 70, 70, 120]
+            tablo = Table(data, colWidths=colWidths)
+
+            # Estilo de la tabla
+            style = TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.black),  # Fila de encabezado
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ])
+            tablo.setStyle(style)
+            
+            cliente_data   = str([poolresultado.iloc[0,1]]).replace('["', "").replace('"]', "").replace("['", "").replace("']", "")  # Agrega cada cliente como una lista
+            cliente_codigo = str([poolresultado.iloc[0,0]]).replace("[np.float64(", "").replace(".0)]", "")
+            condicion_data = str(poolresultadocond.iloc[0,1])
+                
+            pdf_buffer = BytesIO()
+
+            doc = SimpleDocTemplate(pdf_buffer, pagesize=pagesize, leftMargin=leftMargin, rightMargin=rightMargin,
+                                    topMargin=topMargin, bottomMargin=bottomMargin)
+
+            # Crea un estilo de texto
+            mi_estilo = ParagraphStyle(
+            name='MiEstilo',
+            fontSize=8,
+            textColor='transparent'
+            )
+            
+            # Crear un párrafo utilizando el estilo personalizado
+            parrafo_personalizado = Paragraph("Te", mi_estilo)
+            # Función para dibujar en el PDF
+            def draw(c, doc):
+                width, height = letter
+                c.setTitle("Cotización Ricardo Almar e Hijos S.A.")  # Establecer el título
+
+                # Datos Cliente/Cotizacion
+                BuenCliente = ("Cliente: " + cliente_codigo + "-" + cliente_data)
+                c.drawString(72, 560, BuenCliente)
+                if tipo_moneda == "Dolar":
+                    MonCotiza = "Dolares"
+                else:
+                    MonCotiza = f"Pesos considerándose un tipo de cambio de USD 1 = {dolar_hoy}"
+                Moneda = ("Cotizacion expresada en: " + MonCotiza)
+                c.drawString(72, 540, Moneda)
+                                              
+                c.drawString(72, 520, "Condición de Pago: " + condicion_data)
+                
+                VendedorCot = ("Vendedor: " + Vendedor)
+                c.drawString(72, 500, VendedorCot) 
+                
+                if entrega_destino == "Sí":
+                    entrega = "entrega en domicilio del cliente"
+                else:
+                    entrega = "retiro en planta/deposito"
+                texto_nota = f"Nota: la presente cotización tiene una validez de {tiempo_cotizacion} y con modalidad {entrega}."
+                c.setFont("Helvetica-Bold", 9)
+                c.drawString(72, 55, texto_nota)
+                
+                #c.drawString(72, 500, "Cotización válida por: " + tiempo_cotizacion)
+                
+                line_y = 575  # Coordenada Y donde quieres que esté la línea
+                c.setStrokeColorRGB(0, 0, 0)  # Color negro para la línea
+                c.setLineWidth(1)  # Grosor de la línea
+                c.line(72, line_y, width - 72, line_y)  # Dibujar línea desde el margen izquierdo (72) hasta el derecho (width - 72)
+
+                # Agregar "Administración" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(72, 645, "ADMINISTRACIÓN")
+
+                # Dirección: "Francisco Roca 574"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 630, "Francisco Roca 574")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono y Fax: "Tel/Fax: (02475) 46-5585 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(72, 600, "Tel/Fax: (02475) 46-5585 L.Rot.") 
+                c.drawString(72, 585, "www.almar.com.ar")
+                
+                x_pos=400
+                # Agregar "PLANTA INDUSTRIAL" en negrita
+                c.setFont("Helvetica-Bold", 11)
+                c.drawString(x_pos, 645, "PLANTA INDUSTRIAL")
+
+                # Dirección: "Ruta Prov. 45 y Carrasco"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 630, "Ruta Prov. 45 y Carrasco")
+
+                # Ciudad: "(2705) Rojas - Buenos Aires"
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 615, "(2705) Rojas - Buenos Aires")
+
+                # Teléfono Textil: "Textil: (02475) 46-5586 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 600, "Textil: (02475) 46-5586 L.Rot.")
+
+                # Teléfono Envases: "Envases: (02475) 46-3381 L.Rot."
+                c.setFont("Helvetica", 10)
+                c.drawString(x_pos, 585, "Envases: (02475) 46-3381 L.Rot.")
+                               
+                c.setStrokeColor(colors.black)
+                c.rect(0.5 * inch, 0.5 * inch, width - 1 * inch, height - 1 * inch)
+
+                # Logo de la empresa
+                c.drawImage("images/Logo.png", 1 * inch, height - 1.7 * inch, width=1 * inch, height=0.9 * inch)
+                
+                ## Título y pretexto
+                c.setFont("HandelGothic BT", 16)
+                c.drawString(320, 730, "Cotización")
+
+                # Fecha junto a "Cotización"
+                c.setFont("Helvetica", 12)
+                c.drawString(415, 730, f"Fecha : {fecha2}")
+
+                # Deja un espacio vertical ajustando la coordenada y
+                separacion_entre_textos = 10  # Ajusta este valor según el espacio que desees
+                c.setFont("HandelGothic BT", 22)
+                c.drawString(150, 670, "RICARDO ALMAR e HIJOS S.A.")              
+                
+                tablo.wrapOn(c, width, height)
+                tablo.drawOn(c, 1 * inch, height - 6   * inch)
+
+            elementos=[parrafo_personalizado]
+            doc.build(elementos, onFirstPage=draw)
+           
+
+            pdf_buffer.seek(0)
+
+            st.markdown("""
+                    <style>
+                        /* Aplica estilo a todos los botones de descarga de Streamlit */
+                        .stDownloadButton>button {
+                              font-size: 40px;               /* Tamaño de la fuente */
+                              background-color: #FFFFFF;     /* Fondo blanco */
+                              color: #333333;                /* Texto gris oscuro */
+                              border: 1px solid #DDDDDD;     /* Borde sutil */
+                              padding: 18px 36px;            /* Espaciado alrededor del texto */
+                              border-radius: 12px;           /* Bordes redondeados */
+                        }
+
+                        .stDownloadButton>button:hover {
+                            background-color: #FFFFFF;  /* Mantener fondo blanco en hover */
+                            color: #FFA500;             /* Naranja para el texto en hover */
+                            border: 1px solid #FFA500;  /* Naranja para el borde en hover */
+                        }
+
+                         .stDownloadButton>button:active,
+                         .stDownloadButton>button:focus {
+                            background-color: #FFFFFF;   
+                            color: #FFA500              
+                            border: 1px solid #FFA500;  
+                        }
+                    </style>
+            """, unsafe_allow_html=True)
+            
+            st.download_button(
+                        label="Descargar Cotizacion",
+                        data=pdf_buffer,
+                        file_name="Cotizacion_Cliente"+ "_" + cliente_codigo + "_" + fecha + ".pdf",
+                        mime="application/pdf",
+                        key="download_button",
+            )
+            st.session_state.cotizacion_generada = True #activo la flag que se cotizo
+        if st.session_state.cotizacion_generada:    
+            def resetall_filtros():
+                # Resetea los filtros a sus valores por defecto
+                st.session_state.reset_filtros = True
+                st.session_state.codigo_seleccionado = 'Todos'
+                st.session_state.categoria_seleccionada = 'Todos'
+                st.session_state.tela_madre_seleccionado = 'Todos'
+                st.session_state.tela_seleccionada = 'Todos'
+                st.session_state.corte_seleccionado = 'Todos'
+                st.session_state.ancho_seleccionado = 'Todos'
+                st.session_state.peso_seleccionado = 'Todos'
+                # Asigna el dataframe original al df_filtrado
+                df_filtrado = df
+
+
+         # Botón para limpiar/reiniciar la aplicación
+        if st.button("Nueva Cotizacion"):
+                   # Limpiar el estado de la sesión y recargar la aplicación
+            st.session_state.clear()  # Limpia todo el estado guardado
+            resetall_filtros()
+            st.rerun()  # Recarga la aplicación 
+#Fin Metros/Peso
 else:
     st.write("No hay artículos en el carrito.")
-
-
-# Footer en Markdown
+# Agrega CSS personalizado para el marcador en la parte inferior
+st.markdown(
+    """
+    <style>
+    .footer {
+        position: static; 
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 5px;
+        text-align: left;
+        font-size: 16px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+# Agrega el marcador
 st.markdown("---")
-st.markdown("Desarrollado en Rojas (BA), Argentina.Equipo: Jonas Fernandez, Ian Favre, Martin Mansilla, Thiago Leonelli.")
-st.markdown("---")
-#st.markdown("- **Emails:** jonasjonifernandez2@gmail.com")
-#st.markdown("- **Emails:** iansistemas990@gmail.com")
-#st.markdown("- **Emails:** martinmansilla615@gmail.com")
-#st.markdown("- **Emails:** thiagodanilocontacto@gmail.com")
-#st.markdown("---")
+st.markdown('<div class="footer">Desarrollado por Equipo EEST N1: Jonas Fernandez, Ian Favre, Martin Mansilla, Thiago Leonelli y Oficina Almar IT. Rojas,(BA).Argentina.</div>', unsafe_allow_html=True)

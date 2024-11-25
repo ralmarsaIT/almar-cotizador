@@ -680,11 +680,11 @@ if tipo_venta == 'Venta por unidad' and tipo_moneda == 'Dolar':
                 
                 ## Título y pretexto
                 c.setFont("HandelGothic BT", 16)
-                c.drawString(320, 730, "Cotizacion")
+                c.drawString(320, 730, "Cotización")
 
                 # Fecha junto a "Cotización"
                 c.setFont("Helvetica", 12)
-                c.drawString(420, 730, f"Fecha : {fecha2}")
+                c.drawString(415, 730, f"Fecha : {fecha2}")
 
                 # Deja un espacio vertical ajustando la coordenada y
                 separacion_entre_textos = 10  # Ajusta este valor según el espacio que desees
@@ -920,11 +920,11 @@ elif tipo_venta == 'Venta por unidad' and tipo_moneda == 'Peso':
                 
                 ## Título y pretexto
                 c.setFont("HandelGothic BT", 16)
-                c.drawString(320, 730, "Cotizacion")
+                c.drawString(320, 730, "Cotización")
 
                 # Fecha junto a "Cotización"
                 c.setFont("Helvetica", 12)
-                c.drawString(420, 730, f"Fecha : {fecha2}")
+                c.drawString(415, 730, f"Fecha : {fecha2}")
 
                 # Deja un espacio vertical ajustando la coordenada y
                 separacion_entre_textos = 10  # Ajusta este valor según el espacio que desees

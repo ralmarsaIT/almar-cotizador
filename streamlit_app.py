@@ -604,7 +604,7 @@ if tipo_venta == 'Venta por unidad' and tipo_moneda == 'Dolar':
                 width, height = letter
                 c.setTitle("Cotización Ricardo Almar e Hijos S.A.")  # Establecer el título
 
-                # Dibujar un borde
+                # Datos Cliente/Cotizacion
                 BuenCliente = ("Cliente: " + cliente_codigo + "-" + cliente_data)
                 c.drawString(72, 560, BuenCliente)
                 if tipo_moneda == "Dolar":
@@ -613,13 +613,14 @@ if tipo_venta == 'Venta por unidad' and tipo_moneda == 'Dolar':
                     MonCotiza = f"Pesos considerándose un tipo de cambio de USD 1 = {dolar_hoy}"
                 Moneda = ("Cotizacion expresada en: " + MonCotiza)
                 c.drawString(72, 540, Moneda)
+                                              
+                c.drawString(72, 520, "Condición de Pago: " + condicion_data)
                 
                 VendedorCot = ("Vendedor: " + Vendedor)
-                c.drawString(380, 540, VendedorCot)                
-                c.drawString(72, 520, "Condición de Pago: " + condicion_data)
-         
+                c.drawString(72, 500, VendedorCot) 
+                
                 if entrega_destino == "Sí":
-                    entrega = "entrega en domicilio del cliente."
+                    entrega = "entrega en domicilio del cliente"
                 else:
                     entrega = "retiro en planta/deposito."
                 texto_nota = f"Nota: la presente cotización tiene una validez de {tiempo_cotizacion} y con modalidad {entrega}."
@@ -843,7 +844,7 @@ elif tipo_venta == 'Venta por unidad' and tipo_moneda == 'Peso':
                 width, height = letter
                 c.setTitle("Cotización Ricardo Almar e Hijos S.A.")  # Establecer el título
 
-                # Dibujar un borde
+                # Datos Cliente/Cotizacion
                 BuenCliente = ("Cliente: " + cliente_codigo + "-" + cliente_data)
                 c.drawString(72, 560, BuenCliente)
                 if tipo_moneda == "Dolar":

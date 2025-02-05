@@ -55,7 +55,8 @@ categoria_producto = df.pop('Categoria Producto')
 # Inserta la columna "categoria_producto" en la posición 2
 df.insert(1, 'Categoria Producto', categoria_producto)
 
-Vendedor = st.experimental_user ["email"]
+Vendedor = "ventas@almar.com.ar"
+#Vendedor = st.experimental_user ["email"]
 st.session_state.reset_filtros = False
 
 col1, col2, col3, col4, col5, col6,col7,col8 = st.columns(8)
